@@ -1,10 +1,10 @@
 <script>
     import {getContext} from 'svelte';
-    import {listen} from './utils.js';
     import {bgEvent, helperEvent} from '@event-calendar/core';
     import Action from './Action.svelte';
     import Pointer from './Pointer.svelte';
     import Resizer from './Resizer.svelte';
+    import { onDestroy } from 'svelte';
 
     let {theme, editable, eventStartEditable, eventDurationEditable, pointer, _bodyEl,
         _interaction, _iClasses, _draggable} = getContext('state');
@@ -22,7 +22,12 @@
 
     $effect(() => {
         if ($_bodyEl) {
-            listen($_bodyEl, 'scroll', bodyScrollHandler);
+            $_bodyEl.addEventListener('scroll', bodyScrollHandler);
+
+            // Cleanup when the component is destroyed
+            onDestroy(() => {
+                $_bodyEl.removeEventListener('scroll', bodyScrollHandler);
+            });
         }
     });
 

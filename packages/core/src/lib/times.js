@@ -1,4 +1,4 @@
-import {is_function} from 'svelte/internal';
+import {is_function} from './utils.js';
 import {addDuration, cloneDate, createDuration, DAY_IN_SECONDS, toISOString, toSeconds} from './date.js';
 import {max as maxFn, min as minFn} from './utils.js';
 import {bgEvent} from './events.js';

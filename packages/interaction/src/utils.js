@@ -1,6 +1,5 @@
-import { min, max } from "@event-calendar/core";
-
 let busy = false;
+
 export function animate(fn) {
   if (!busy) {
     busy = true;
@@ -12,13 +11,9 @@ export function animate(fn) {
 }
 
 export function limit(value, minLimit, maxLimit) {
-  return max(minLimit, min(maxLimit, value));
+  return Math.max(minLimit, Math.min(maxLimit, value));
 }
 
-export {
-  destroy_component,
-  get_current_component,
-  is_function,
-  run_all,
-  listen,
-} from "svelte/internal";
+export function is_function(value) {
+  return typeof value === "function";
+}

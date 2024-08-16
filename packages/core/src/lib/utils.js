@@ -30,8 +30,6 @@ export function isArray(value) {
   return Array.isArray(value);
 }
 
-export {
-  destroy_component,
-  get_current_component,
-  is_function,
-} from "svelte/internal";
+export function is_function(value) {
+  return typeof value === "function";
+}

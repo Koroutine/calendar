@@ -19,7 +19,7 @@
         toViewWithLocalDates,
         listView, timelineView
     } from '@event-calendar/core';
-    import {is_function, listen, run_all, animate, limit} from './utils';
+    import { is_function } from 'utils';
 
     let {_iEvents, _iClass, _events, _view, _dayGrid, _draggable, _bodyEl, dateClick, dragScroll, datesAboveResources,
         eventDragMinDistance, eventDragStart, eventDragStop, eventDrop, eventLongPressDelay,
@@ -206,34 +206,43 @@
         }
 
         if ($dragScroll) {
-            let thresholdY = $slotHeight * 2;
-            let thresholdX = $slotWidth;
-            animate(() => {
-                if (bodyEl) {
-                    if (toY < thresholdY) {
-                        window.scrollBy(0, max(-10, (toY - thresholdY) / 3));
-                    }
-                    if (toY < bodyRect.top + thresholdY) {
-                        bodyEl.scrollTop += max(-10, (toY - bodyRect.top - thresholdY) / 3);
-                    }
-                    if (toY > window.innerHeight - thresholdY) {
-                        window.scrollBy(0, min(10, (toY - window.innerHeight + thresholdY) / 3));
-                    }
-                    if (toY > bodyRect.bottom - thresholdY) {
-                        bodyEl.scrollTop += min(10, (toY - bodyRect.bottom + thresholdY) / 3);
-                    }
+    let thresholdY = $slotHeight * 2;
+    let thresholdX = $slotWidth;
 
-                    if (timelineView($view)) {
-                        if (toX < bodyRect.left + thresholdX) {
-                            bodyEl.scrollLeft += max(-10, (toX - bodyRect.left - thresholdX) / 3);
-                        }
-                        if (toX > bodyRect.right - thresholdX) {
-                            bodyEl.scrollLeft += min(10, (toX - bodyRect.right + thresholdX) / 3);
-                        }
-                    }
+    function scrollLogic() {
+        if (bodyEl) {
+            if (toY < thresholdY) {
+                window.scrollBy(0, Math.max(-10, (toY - thresholdY) / 3));
+            }
+            if (toY < bodyRect.top + thresholdY) {
+                bodyEl.scrollTop += Math.max(-10, (toY - bodyRect.top - thresholdY) / 3);
+            }
+            if (toY > window.innerHeight - thresholdY) {
+                window.scrollBy(0, Math.min(10, (toY - window.innerHeight + thresholdY) / 3));
+            }
+            if (toY > bodyRect.bottom - thresholdY) {
+                bodyEl.scrollTop += Math.min(10, (toY - bodyRect.bottom + thresholdY) / 3);
+            }
+
+            if (timelineView($view)) {
+                if (toX < bodyRect.left + thresholdX) {
+                    bodyEl.scrollLeft += Math.max(-10, (toX - bodyRect.left - thresholdX) / 3);
                 }
-            });
+                if (toX > bodyRect.right - thresholdX) {
+                    bodyEl.scrollLeft += Math.min(10, (toX - bodyRect.right + thresholdX) / 3);
+                }
+            }
         }
+    }
+
+    // Use requestAnimationFrame to achieve smooth scrolling if needed
+    function animateScroll() {
+        scrollLogic();
+        requestAnimationFrame(animateScroll); // This ensures the scroll logic runs continuously
+    }
+
+    animateScroll(); // Start the animation loop
+}
     }
 
     export function handleScroll() {
@@ -349,8 +358,8 @@
     function findDayEl() {
         // Limit coordinates to viewport
         return getElementWithPayload(
-            limit(toX, viewport[0], viewport[1]),
-            limit(toY, viewport[2], viewport[3])
+            clamp(toX, viewport[0], viewport[1]),
+            clamp(toY, viewport[2], viewport[3])
         );
     }
 
@@ -454,15 +463,33 @@
     _view.subscribe(unselect);
 
     function handleTouchStart(jsEvent) {
-        if (complexAction()) {
-            let target = jsEvent.target;
-            let stops = [];
-            let stop = () => run_all(stops);
-            stops.push(listen(target, 'touchmove', createPreventDefaultHandler(() => interacting)));
-            stops.push(listen(target, 'touchend', stop));
-            stops.push(listen(target, 'touchcancel', stop));
-        }
+    if (complexAction()) {
+      let target = jsEvent.target;
+      let stops = [];
+
+      let stop = () => {
+        stops.forEach((fn) => fn());
+      };
+
+      // Adding event listeners and pushing cleanup functions to stops
+      target.addEventListener(
+        "touchmove",
+        createPreventDefaultHandler(() => interacting)
+      );
+      stops.push(() =>
+        target.removeEventListener(
+          "touchmove",
+          createPreventDefaultHandler(() => interacting)
+        )
+      );
+
+      target.addEventListener("touchend", stop);
+      stops.push(() => target.removeEventListener("touchend", stop));
+
+      target.addEventListener("touchcancel", stop);
+      stops.push(() => target.removeEventListener("touchcancel", stop));
     }
+  }
 
     function createPreventDefaultHandler(condition) {
         return jsEvent => {

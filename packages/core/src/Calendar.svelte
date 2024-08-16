@@ -17,14 +17,12 @@
         flushDebounce,
         hasYScroll,
         listView,
-        task, prevDate, nextDate,
-        destroy_component, get_current_component
+        task, prevDate, nextDate
     } from './lib.js';
 
     export let plugins = [];
     export let options = {};
 
-    let component = get_current_component();
 
     let state = new State(plugins, options);
     setContext('state', state);
@@ -112,10 +110,6 @@
             return info;
         }
         return null;
-    }
-
-    export function destroy() {
-        destroy_component(component, true);
     }
 
     export function next() {
