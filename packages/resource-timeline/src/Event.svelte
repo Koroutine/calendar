@@ -1,190 +1,246 @@
 <script>
-    import {getContext, onMount} from 'svelte';
-    import {is_function} from './utils.js';
-    import {
-        createEventContent,
-        createEventClasses,
-        toEventWithLocalDates,
-        toViewWithLocalDates,
-        setContent,
-        bgEvent,
-        helperEvent,
-        keyEnter,
-        resourceBackgroundColor,
-        resourceTextColor,
-        task, height, DAY_IN_SECONDS, toSeconds
-    } from '@event-calendar/core';
-    import {repositionEvent, getSlotTimeLimits} from './lib.js';
+  import { getContext, onMount } from "svelte";
+  import { is_function } from "./utils.js";
+  import {
+    createEventContent,
+    createEventClasses,
+    toEventWithLocalDates,
+    toViewWithLocalDates,
+    setContent,
+    bgEvent,
+    helperEvent,
+    keyEnter,
+    resourceBackgroundColor,
+    resourceTextColor,
+    task,
+    height,
+    DAY_IN_SECONDS,
+    toSeconds,
+  } from "@event-calendar/core";
+  import { repositionEvent, getSlotTimeLimits } from "./lib.js";
 
-    let {
-        date: date,
-        chunk: chunk,
-        dayChunks: dayChunks = [],
-        longChunks: longChunks = {},
-        resource: resource = undefined
-    } = $props();
+  let {
+    date: date,
+    chunk: chunk,
+    dayChunks: dayChunks = [],
+    longChunks: longChunks = {},
+    resource: resource = undefined,
+  } = $props();
 
-    let {displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor,eventColor, eventContent, eventClick,
-        eventDidMount, eventClassNames, eventMouseEnter, eventMouseLeave, resources, slotDuration, slotWidth, theme,
-        _view, _intlEventTime, _interaction, _iClasses, _dayTimeLimits, _tasks} = getContext('state');
+  let {
+    displayEventEnd,
+    eventAllUpdated,
+    eventBackgroundColor,
+    eventTextColor,
+    eventColor,
+    eventContent,
+    eventClick,
+    eventDidMount,
+    eventClassNames,
+    eventMouseEnter,
+    eventMouseLeave,
+    resources,
+    slotDuration,
+    slotWidth,
+    theme,
+    _view,
+    _intlEventTime,
+    _interaction,
+    _iClasses,
+    _dayTimeLimits,
+    _tasks,
+  } = getContext("state");
 
-    let el = $state();
-    let display = $state();
-    let classes = $state();
-    let style = $state();
-    let content = $state();
-    let timeText = $state();
-    let margin = $state(helperEvent(chunk.event.display) ? 1 : 0);
-    let width = $state(0);
+  let el = $state();
+  let display = $state();
+  let classes = $state();
+  let style = $state();
+  let content = $state();
+  let timeText = $state();
+  let margin = $state(helperEvent(chunk.event.display) ? 1 : 0);
+  let width = $state(0);
 
-    const event = $derived(chunk.event);
+  const event = $derived(chunk.event);
 
-    $effect(() => {
-        display = event.display;
+  $effect(() => {
+    display = event.display;
 
-        // Style
-        let step = toSeconds($slotDuration);
-        if (step) {
-            let start = (chunk.start - date) / 1000;
-            let end = (chunk.end - date) / 1000;
-            // Shift start
-            let slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, date);
-            let offsetStart = toSeconds(slotTimeLimits.min);
-            let offsetEnd = toSeconds(slotTimeLimits.max);
-            start -= offsetStart;
-            if (start < 0) {
-                start = 0;
-            }
-            if (start > offsetEnd - offsetStart) {
-                start = offsetEnd - offsetStart;
-            }
-            // Shift end
-            let cut = 0;
-            for (let i = 0; i < chunk.days; ++i) {
-                let slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, chunk.dates[i]);
-                let offsetStart = toSeconds(slotTimeLimits.min);
-                let offsetEnd = toSeconds(slotTimeLimits.max);
-                let dayStart = DAY_IN_SECONDS * i;
-                // Cut offsetEnd
-                let dayEnd = dayStart + DAY_IN_SECONDS;
-                if (dayEnd > end) {
-                    dayEnd = end;
-                }
-                if (dayEnd > dayStart + offsetEnd) {
-                    cut += dayEnd - dayStart - offsetEnd;
-                }
-                // Cut offsetStart
-                let c = end - dayStart;
-                if (c > offsetStart) {
-                    c = offsetStart;
-                }
-                cut += c;
-            }
-            end -= cut;
-            let left = start / step * $slotWidth;
-            width = (end - start) / step * $slotWidth;
-            style =
-                `left:${left}px;` +
-                `width:${width}px;`
-            ;
-        } else {
-            // Month view
-            width = chunk.days * 100;
-            style =
-                `width:${width}%;`
-            ;
+    // Style
+    let step = toSeconds($slotDuration);
+    if (step) {
+      let start = (chunk.start - date) / 1000;
+      let end = (chunk.end - date) / 1000;
+      // Shift start
+      let slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, date);
+      let offsetStart = toSeconds(slotTimeLimits.min);
+      let offsetEnd = toSeconds(slotTimeLimits.max);
+      start -= offsetStart;
+      if (start < 0) {
+        start = 0;
+      }
+      if (start > offsetEnd - offsetStart) {
+        start = offsetEnd - offsetStart;
+      }
+      // Shift end
+      let cut = 0;
+      for (let i = 0; i < chunk.days; ++i) {
+        let slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, chunk.dates[i]);
+        let offsetStart = toSeconds(slotTimeLimits.min);
+        let offsetEnd = toSeconds(slotTimeLimits.max);
+        let dayStart = DAY_IN_SECONDS * i;
+        // Cut offsetEnd
+        let dayEnd = dayStart + DAY_IN_SECONDS;
+        if (dayEnd > end) {
+          dayEnd = end;
         }
-        let bgColor = event.backgroundColor || resourceBackgroundColor(event, $resources) || $eventBackgroundColor || $eventColor;
-        let txtColor = event.textColor || resourceTextColor(event, $resources) || $eventTextColor;
-        let marginTop = margin;
-        if (event._margin) {
-            // Force margin for helper events
-            let [_margin, _resource] = event._margin;
-            if (resource === _resource) {
-                marginTop = _margin;
-            }
+        if (dayEnd > dayStart + offsetEnd) {
+          cut += dayEnd - dayStart - offsetEnd;
         }
-        style += `margin-top:${marginTop}px;`;
-        if (bgColor) {
-            style += `background-color:${bgColor};`;
+        // Cut offsetStart
+        let c = end - dayStart;
+        if (c > offsetStart) {
+          c = offsetStart;
         }
-        if (txtColor) {
-            style += `color:${txtColor};`;
-        }
-        style += event.styles.join(';');
-
-        // Class
-        classes = [
-            bgEvent(display) ? $theme.bgEvent : $theme.event,
-            ...$_iClasses([], event),
-            ...createEventClasses($eventClassNames, event, $_view)
-        ].join(' ');
-    });
-
-    $effect(() => {
-      [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
-    })
-
-    onMount(() => {
-        if (is_function($eventDidMount)) {
-            $eventDidMount({
-                event: toEventWithLocalDates(event),
-                timeText,
-                el,
-                view: toViewWithLocalDates($_view)
-            });
-        }
-    });
-
-    $effect(() => {
-        if (is_function($eventAllUpdated) && !helperEvent(display)) {
-            task(() => $eventAllUpdated({view: toViewWithLocalDates($_view)}), 'eau', _tasks);
-        }
-    });
-
-    function createHandler(fn, display) {
-        return !helperEvent(display) && is_function(fn)
-            ? jsEvent => fn({event: toEventWithLocalDates(event), el, jsEvent, view: toViewWithLocalDates($_view)})
-            : undefined;
+        cut += c;
+      }
+      end -= cut;
+      let left = (start / step) * $slotWidth;
+      width = ((end - start) / step) * $slotWidth;
+      style = `left:${left}px;` + `width:${width}px;`;
+    } else {
+      // Month view
+      width = chunk.days * 100;
+      style = `width:${width}%;`;
     }
-
-    function createDragHandler(interaction, resize) {
-        return interaction.action
-            ? jsEvent => interaction.action.drag(event, jsEvent, resize, null, [margin, resource])
-            : undefined;
+    let bgColor =
+      event.backgroundColor ||
+      resourceBackgroundColor(event, $resources) ||
+      $eventBackgroundColor ||
+      $eventColor;
+    let txtColor =
+      event.textColor ||
+      resourceTextColor(event, $resources) ||
+      $eventTextColor;
+    let marginTop = margin;
+    if (event._margin) {
+      // Force margin for helper events
+      let [_margin, _resource] = event._margin;
+      if (resource === _resource) {
+        marginTop = _margin;
+      }
     }
-
-    const onclick = $derived(!bgEvent(display) && createHandler($eventClick, display));
-
-    export function reposition() {
-        if (!el) {
-            return 0;
-        }
-        let h = height(el);
-        margin = repositionEvent(chunk, dayChunks, longChunks, h, !toSeconds($slotDuration));
-        return margin + h;
+    style += `margin-top:${marginTop}px;`;
+    if (bgColor) {
+      style += `background-color:${bgColor};`;
     }
+    if (txtColor) {
+      style += `color:${txtColor};`;
+    }
+    style += event.styles.join(";");
+
+    // Class
+    classes = [
+      bgEvent(display) ? $theme.bgEvent : $theme.event,
+      ...$_iClasses([], event),
+      ...createEventClasses($eventClassNames, event, $_view),
+    ].join(" ");
+  });
+
+  $effect(() => {
+    [timeText, content] = createEventContent(
+      chunk,
+      $displayEventEnd,
+      $eventContent,
+      $theme,
+      $_intlEventTime,
+      $_view
+    );
+  });
+
+  onMount(() => {
+    if (is_function($eventDidMount)) {
+      $eventDidMount({
+        event: toEventWithLocalDates(event),
+        timeText,
+        el,
+        view: toViewWithLocalDates($_view),
+      });
+    }
+  });
+
+  $effect(() => {
+    if (is_function($eventAllUpdated) && !helperEvent(display)) {
+      task(
+        () => $eventAllUpdated({ view: toViewWithLocalDates($_view) }),
+        "eau",
+        _tasks
+      );
+    }
+  });
+
+  function createHandler(fn, display) {
+    return !helperEvent(display) && is_function(fn)
+      ? (jsEvent) =>
+          fn({
+            event: toEventWithLocalDates(event),
+            el,
+            jsEvent,
+            view: toViewWithLocalDates($_view),
+          })
+      : undefined;
+  }
+
+  function createDragHandler(interaction, resize) {
+    return interaction.action
+      ? (jsEvent) =>
+          interaction.action.drag(event, jsEvent, resize, null, [
+            margin,
+            resource,
+          ])
+      : undefined;
+  }
+
+  const onclick = $derived(
+    !bgEvent(display) && createHandler($eventClick, display)
+  );
+
+  export function reposition() {
+    if (!el) {
+      return 0;
+    }
+    let h = height(el);
+    margin = repositionEvent(
+      chunk,
+      dayChunks,
+      longChunks,
+      h,
+      !toSeconds($slotDuration)
+    );
+    return margin + h;
+  }
 </script>
 
 {#if width > 0}
-    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-    <article
-        bind:this={el}
-        class="{classes}"
-        {style}
-        role="{onclick ? 'button' : undefined}"
-        tabindex="{onclick ? 0 : undefined}"
-        on:click={onclick}
-        on:keydown={onclick && keyEnter(onclick)}
-        on:mouseenter={createHandler($eventMouseEnter, display)}
-        on:mouseleave={createHandler($eventMouseLeave, display)}
-        on:pointerdown={!bgEvent(display) && !helperEvent(display) && createDragHandler($_interaction)}
-    >
-        <div class="{$theme.eventBody}" use:setContent={content}></div>
-        <svelte:component
-            this={$_interaction.resizer}
-            {event}
-            on:pointerdown={createDragHandler($_interaction, 'x')}
-        />
-    </article>
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <article
+    bind:this={el}
+    class={classes}
+    {style}
+    role={onclick ? "button" : undefined}
+    tabindex={onclick ? 0 : undefined}
+    {onclick}
+    onkeydown={onclick && keyEnter(onclick)}
+    onmouseenter={createHandler($eventMouseEnter, display)}
+    onmouseleave={createHandler($eventMouseLeave, display)}
+    onpointerdown={!bgEvent(display) &&
+      !helperEvent(display) &&
+      createDragHandler($_interaction)}
+  >
+    <div class={$theme.eventBody} use:setContent={content}></div>
+    <svelte:component
+      this={$_interaction.resizer}
+      {event}
+      onpointerdown={createDragHandler($_interaction, "x")}
+    />
+  </article>
 {/if}

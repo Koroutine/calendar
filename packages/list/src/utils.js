@@ -1,1 +1,3 @@
-export { is_function } from "svelte/internal";
+export function is_function(value) {
+  return typeof value === "function";
+}

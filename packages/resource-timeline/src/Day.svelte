@@ -90,8 +90,8 @@
     class="{$theme.day} {$theme.weekdays?.[date.getUTCDay()]}{isToday ? ' ' + $theme.today : ''}{highlight ? ' ' + $theme.highlight : ''}"
     style="flex-grow: {allDay ? null : ceil((toSeconds(slotTimeLimits.max) - toSeconds(slotTimeLimits.min)) / toSeconds($slotDuration))}"
     role="cell"
-    on:pointerleave={$_interaction.pointer?.leave}
-    on:pointerdown={$_interaction.action?.select}
+    onpointerleave={$_interaction.pointer?.leave}
+    onpointerdown={$_interaction.action?.select}
 >
     <div class="{$theme.events}">
         {#each dayBgChunks as chunk (chunk.event)}

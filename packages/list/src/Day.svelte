@@ -52,7 +52,7 @@
         bind:this={el}
         class="{$theme.day} {$theme.weekdays?.[date.getUTCDay()]}{isToday ? ' ' + $theme.today : ''}{highlight ? ' ' + $theme.highlight : ''}"
         role="listitem"
-        on:pointerdown={$_interaction.action?.select}
+        onpointerdown={$_interaction.action?.select}
     >
         <h4 class="{$theme.dayHead}">
             <time {datetime} use:setContent={$_intlListDay.format(date)}></time>

@@ -17,7 +17,7 @@
 
     let {_events, _iEvents, _queue2, hiddenDays} = getContext('state');
 
-    let chunks = $state(), bgChunks = $state(), longChunks = $state();
+    let chunks = $state([]), bgChunks = $state([]), longChunks = $state([]);
 
     let start = $state();
     let end = $state();

@@ -37,8 +37,8 @@
     bind:this={el}
     class="{$theme.day} {$theme.weekdays?.[date.getUTCDay()]}{isToday ? ' ' + $theme.today : ''}{highlight ? ' ' + $theme.highlight : ''}"
     role="cell"
-    on:pointerleave={$_interaction.pointer?.leave}
-    on:pointerdown={$_interaction.action?.select}
+    onpointerleave={$_interaction.pointer?.leave}
+    onpointerdown={$_interaction.action?.select}
 >
     <div class="{$theme.bgEvents}">
         {#each dayBgChunks as chunk (chunk.event)}

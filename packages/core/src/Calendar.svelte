@@ -1,6 +1,6 @@
 <script>
     import './styles/index.scss';
-    import {setContext, beforeUpdate, afterUpdate} from 'svelte';
+    import {setContext} from 'svelte';
     import {get} from 'svelte/store';
     import {diff} from './storage/options';
     import State from './storage/state';
@@ -20,9 +20,7 @@
         task, prevDate, nextDate
     } from './lib.js';
 
-    export let plugins = [];
-    export let options = {};
-
+    let {plugins =[], options = {}} = $props();
 
     let state = new State(plugins, options);
     setContext('state', state);
@@ -32,9 +30,11 @@
 
     // Reactively update options that did change
     let prevOptions = {...options};
-    $: for (let [name, value] of diff(options, prevOptions)) {
-        setOption(name, value);
-    }
+    $effect(() => {
+        for (let [name, value] of diff(options, prevOptions)) {
+            setOption(name, value);
+        }
+    });
 
     export function setOption(name, value) {
         state._set(name, value);
@@ -122,11 +122,11 @@
         return this;
     }
 
-    beforeUpdate(() => {
+    $effect(() => {
         flushDebounce($_queue);
     });
 
-    afterUpdate(() => {
+    $effect(() => {
         flushDebounce($_queue2);
         task(recheckScrollable, null, _tasks);
     });

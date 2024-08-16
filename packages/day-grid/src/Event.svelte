@@ -1,195 +1,239 @@
 <script>
-    import {getContext, onMount} from 'svelte';
-    import {is_function} from './utils.js';
-    import {
-        ancestor,
-        createEventClasses,
-        createEventContent,
-        height,
-        max,
-        toEventWithLocalDates,
-        toViewWithLocalDates,
-        setContent,
-        repositionEvent,
-        resourceBackgroundColor,
-        resourceTextColor,
-        helperEvent,
-        keyEnter,
-        task,
-        rect,
-        bgEvent
-    } from '@event-calendar/core';
+  import { getContext, onMount } from "svelte";
+  import { is_function } from "./utils.js";
+  import {
+    ancestor,
+    createEventClasses,
+    createEventContent,
+    height,
+    max,
+    toEventWithLocalDates,
+    toViewWithLocalDates,
+    setContent,
+    repositionEvent,
+    resourceBackgroundColor,
+    resourceTextColor,
+    helperEvent,
+    keyEnter,
+    task,
+    rect,
+    bgEvent,
+  } from "@event-calendar/core";
 
-    let {
-        chunk: chunk,
-        longChunks: longChunks = {},
-        inPopup: inPopup = false,
-        dates: dates = []
-    } = $props();
+  let {
+    chunk: chunk,
+    longChunks: longChunks = {},
+    inPopup: inPopup = false,
+    dates: dates = [],
+  } = $props();
 
-    let {dayMaxEvents, displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventClick, eventColor,
-        eventContent, eventClassNames, eventDidMount, eventMouseEnter, eventMouseLeave, resources, theme,
-        _view, _intlEventTime, _interaction, _iClasses, _hiddenEvents, _popupDate, _tasks} = getContext('state');
+  let {
+    dayMaxEvents,
+    displayEventEnd,
+    eventAllUpdated,
+    eventBackgroundColor,
+    eventTextColor,
+    eventClick,
+    eventColor,
+    eventContent,
+    eventClassNames,
+    eventDidMount,
+    eventMouseEnter,
+    eventMouseLeave,
+    resources,
+    theme,
+    _view,
+    _intlEventTime,
+    _interaction,
+    _iClasses,
+    _hiddenEvents,
+    _popupDate,
+    _tasks,
+  } = getContext("state");
 
-    let el = $state();
-    let classes = $state();
-    let style = $state();
-    let content = $state();
-    let timeText = $state();
-    let margin = $state(1);
-    let hidden = $state(false);
-    let display = $state();
+  let el = $state();
+  let classes = $state();
+  let style = $state();
+  let content = $state();
+  let timeText = $state();
+  let margin = $state(1);
+  let hidden = $state(false);
+  let display = $state();
 
-    const event = $derived(chunk.event);
+  const event = $derived(chunk.event);
 
-    $effect(() => {
-        display = event.display;
+  $effect(() => {
+    display = event.display;
 
-        // Class & Style
-        let bgColor = event.backgroundColor || resourceBackgroundColor(event, $resources) || $eventBackgroundColor || $eventColor;
-        let txtColor = event.textColor || resourceTextColor(event, $resources) || $eventTextColor;
-        if (bgEvent(display)) {
-            style = `width:calc(${chunk.days * 100}% + ${(chunk.days - 1)}px);`;
-        } else {
-            let marginTop = margin;
-            if (event._margin) {
-                // Force margin for helper events
-                let [_margin, _dates] = event._margin;
-                if (chunk.date >= _dates[0] && chunk.date <= _dates.at(-1)) {
-                    marginTop = _margin;
-                }
-            }
-            style =
-                `width:calc(${chunk.days * 100}% + ${(chunk.days - 1) * 7}px);` +
-                `margin-top:${marginTop}px;`;
+    // Class & Style
+    let bgColor =
+      event.backgroundColor ||
+      resourceBackgroundColor(event, $resources) ||
+      $eventBackgroundColor ||
+      $eventColor;
+    let txtColor =
+      event.textColor ||
+      resourceTextColor(event, $resources) ||
+      $eventTextColor;
+    if (bgEvent(display)) {
+      style = `width:calc(${chunk.days * 100}% + ${chunk.days - 1}px);`;
+    } else {
+      let marginTop = margin;
+      if (event._margin) {
+        // Force margin for helper events
+        let [_margin, _dates] = event._margin;
+        if (chunk.date >= _dates[0] && chunk.date <= _dates.at(-1)) {
+          marginTop = _margin;
         }
-        if (bgColor) {
-            style += `background-color:${bgColor};`;
-        }
-        if (txtColor) {
-            style += `color:${txtColor};`;
-        }
+      }
+      style =
+        `width:calc(${chunk.days * 100}% + ${(chunk.days - 1) * 7}px);` +
+        `margin-top:${marginTop}px;`;
+    }
+    if (bgColor) {
+      style += `background-color:${bgColor};`;
+    }
+    if (txtColor) {
+      style += `color:${txtColor};`;
+    }
+    if (hidden) {
+      style += "visibility:hidden;";
+    }
+    style += event.styles.join(";");
+
+    classes = [
+      bgEvent(display) ? $theme.bgEvent : $theme.event,
+      ...$_iClasses([], event),
+      ...createEventClasses($eventClassNames, event, $_view),
+    ].join(" ");
+  });
+
+  $effect(() => {
+    [timeText, content] = createEventContent(
+      chunk,
+      $displayEventEnd,
+      $eventContent,
+      $theme,
+      $_intlEventTime,
+      $_view
+    );
+  });
+
+  onMount(() => {
+    if (is_function($eventDidMount)) {
+      $eventDidMount({
+        event: toEventWithLocalDates(event),
+        timeText,
+        el,
+        view: toViewWithLocalDates($_view),
+      });
+    }
+  });
+
+  $effect(() => {
+    if (is_function($eventAllUpdated) && !helperEvent(display)) {
+      task(
+        () => $eventAllUpdated({ view: toViewWithLocalDates($_view) }),
+        "eau",
+        _tasks
+      );
+    }
+  });
+
+  function createHandler(fn, display) {
+    return !helperEvent(display) && is_function(fn)
+      ? (jsEvent) =>
+          fn({
+            event: toEventWithLocalDates(event),
+            el,
+            jsEvent,
+            view: toViewWithLocalDates($_view),
+          })
+      : undefined;
+  }
+
+  function createDragHandler(interaction, resize) {
+    return interaction.action
+      ? (jsEvent) =>
+          $_interaction.action.drag(
+            event,
+            jsEvent,
+            resize,
+            inPopup ? $_popupDate : null,
+            [rect(el).top - rect(ancestor(el, 1)).top, dates]
+          )
+      : undefined;
+  }
+
+  export function reposition() {
+    if (!el) {
+      return;
+    }
+    margin = repositionEvent(chunk, longChunks, height(el));
+    if ($dayMaxEvents === true) {
+      hide();
+    } else {
+      hidden = false;
+    }
+  }
+
+  function hide() {
+    let dayEl = ancestor(el, 2);
+    let h = height(dayEl) - height(dayEl.firstElementChild) - footHeight(dayEl);
+    hidden = chunk.bottom > h;
+    let update = false;
+    // Hide or show the event throughout all days
+    for (let date of chunk.dates) {
+      let hiddenEvents = $_hiddenEvents[date.getTime()];
+      if (hiddenEvents) {
+        let size = hiddenEvents.size;
         if (hidden) {
-            style += 'visibility:hidden;';
-        }
-        style += event.styles.join(';');
-
-        classes = [
-            bgEvent(display) ? $theme.bgEvent : $theme.event,
-            ...$_iClasses([], event),
-            ...createEventClasses($eventClassNames, event, $_view)
-        ].join(' ');
-    });
-
-    $effect(() => {
-      [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
-    })
-
-    onMount(() => {
-        if (is_function($eventDidMount)) {
-            $eventDidMount({
-                event: toEventWithLocalDates(event),
-                timeText,
-                el,
-                view: toViewWithLocalDates($_view)
-            });
-        }
-    });
-
-    $effect(() => {
-        if (is_function($eventAllUpdated) && !helperEvent(display)) {
-            task(() => $eventAllUpdated({view: toViewWithLocalDates($_view)}), 'eau', _tasks);
-        }
-    });
-
-    function createHandler(fn, display) {
-        return !helperEvent(display) && is_function(fn)
-            ? jsEvent => fn({event: toEventWithLocalDates(event), el, jsEvent, view: toViewWithLocalDates($_view)})
-            : undefined;
-    }
-
-    function createDragHandler(interaction, resize) {
-        return interaction.action
-            ? jsEvent =>
-                $_interaction.action.drag(
-                    event,
-                    jsEvent,
-                    resize,
-                    inPopup ? $_popupDate : null,
-                    [rect(el).top - rect(ancestor(el, 1)).top, dates]
-                )
-            : undefined;
-    }
-
-    export function reposition() {
-        if (!el) {
-            return;
-        }
-        margin = repositionEvent(chunk, longChunks, height(el));
-        if ($dayMaxEvents === true) {
-            hide();
+          hiddenEvents.add(chunk.event);
         } else {
-            hidden = false;
+          hiddenEvents.delete(chunk.event);
         }
+        if (size !== hiddenEvents.size) {
+          update = true;
+        }
+      }
     }
-
-    function hide() {
-        let dayEl = ancestor(el, 2);
-        let h = height(dayEl) - height(dayEl.firstElementChild) - footHeight(dayEl);
-        hidden = chunk.bottom > h;
-        let update = false;
-        // Hide or show the event throughout all days
-        for (let date of chunk.dates) {
-            let hiddenEvents = $_hiddenEvents[date.getTime()];
-            if (hiddenEvents) {
-                let size = hiddenEvents.size;
-                if (hidden) {
-                    hiddenEvents.add(chunk.event);
-                } else {
-                    hiddenEvents.delete(chunk.event);
-                }
-                if (size !== hiddenEvents.size) {
-                    update = true;
-                }
-            }
-        }
-        if (update) {
-            $_hiddenEvents = $_hiddenEvents;
-        }
+    if (update) {
+      $_hiddenEvents = $_hiddenEvents;
     }
+  }
 
-    function footHeight(dayEl) {
-        let h = 0;
-        for (let i = 0; i < chunk.days; ++i) {
-            h = max(h, height(dayEl.lastElementChild));
-            dayEl = dayEl.nextElementSibling;
-            if (!dayEl) {
-                break;
-            }
-        }
-        return h;
+  function footHeight(dayEl) {
+    let h = 0;
+    for (let i = 0; i < chunk.days; ++i) {
+      h = max(h, height(dayEl.lastElementChild));
+      dayEl = dayEl.nextElementSibling;
+      if (!dayEl) {
+        break;
+      }
     }
+    return h;
+  }
 
-    const onclick = $derived(createHandler($eventClick, display));
+  const onclick = $derived(createHandler($eventClick, display));
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <article
-    bind:this={el}
-    class="{classes}"
-    {style}
-    role="{onclick ? 'button' : undefined}"
-    tabindex="{onclick ? 0 : undefined}"
-    on:click={onclick || undefined}
-    on:keydown={onclick && keyEnter(onclick)}
-    on:mouseenter={createHandler($eventMouseEnter, display)}
-    on:mouseleave={createHandler($eventMouseLeave, display)}
-    on:pointerdown={!helperEvent(display) && createDragHandler($_interaction)}
+  bind:this={el}
+  class={classes}
+  {style}
+  role={onclick ? "button" : undefined}
+  tabindex={onclick ? 0 : undefined}
+  onclick={onclick || undefined}
+  onkeydown={onclick && keyEnter(onclick)}
+  onmouseenter={createHandler($eventMouseEnter, display)}
+  onmouseleave={createHandler($eventMouseLeave, display)}
+  onpointerdown={!helperEvent(display) && createDragHandler($_interaction)}
 >
-    <div class="{$theme.eventBody}" use:setContent={content}></div>
-    <svelte:component
-        this={$_interaction.resizer}
-        {event}
-        on:pointerdown={createDragHandler($_interaction, 'x')}
-    />
+  <div class={$theme.eventBody} use:setContent={content}></div>
+  <svelte:component
+    this={$_interaction.resizer}
+    {event}
+    onpointerdown={createDragHandler($_interaction, "x")}
+  />
 </article>

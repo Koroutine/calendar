@@ -251,7 +251,7 @@ In Svelte, you can simply update the original `options` object.
     }
 </script>
 
-<button on:click={updateOptions}>Change slot duration</button>
+<button onclick={updateOptions}>Change slot duration</button>
 <Calendar {plugins} {options} />
 ```
 
@@ -2274,7 +2274,7 @@ In Svelte, methods are available from a component instance:
     }
 </script>
 
-<button on:click={invokeMethod}>Refetch events</button>
+<button onclick={invokeMethod}>Refetch events</button>
 <Calendar bind:this={ec} {plugins} {options} />
 ```
 

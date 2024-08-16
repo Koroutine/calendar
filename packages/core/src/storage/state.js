@@ -1,5 +1,5 @@
 import { get, writable } from "svelte/store";
-import { is_function } from "lib/utils";
+import { is_function } from "../lib/utils.js";
 import { createOptions, createParsers } from "./options";
 import {
   activeRange,
