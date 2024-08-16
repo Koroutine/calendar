@@ -1,6 +1,9 @@
 {
   "name": "event-calendar",
   "version": "3.4.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
