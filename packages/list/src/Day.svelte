@@ -22,8 +22,6 @@
 
     let el = $state();
     let chunks = $state();
-    let isToday, highlight;
-    let datetime;
 
     $effect(() => {
         chunks = [];
@@ -38,9 +36,9 @@
         sortEventChunks(chunks);
     });
 
-    isToday = $derived(datesEqual(date, $_today));
-    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
-    datetime = $derived(toISOString(date, 10));
+    const isToday = $derived(datesEqual(date, $_today));
+    const highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
+    const datetime = $derived(toISOString(date, 10));
 
     $effect(() => {
         if (el) {

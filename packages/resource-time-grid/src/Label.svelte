@@ -1,6 +1,6 @@
 <script>
-    import {getContext, onMount, afterUpdate, createEventDispatcher} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {getContext, onMount, createEventDispatcher} from 'svelte';
+    import {is_function} from './utils.js';
     import {setContent, toLocalDate} from '@event-calendar/core';
 
     let {
@@ -39,7 +39,7 @@
         }
     });
 
-    afterUpdate(() => {
+    $effect(() => {
         if (date) {
             ariaLabel = $_intlDayHeaderAL.format(date) + ', ' + el.innerText;
         } else {

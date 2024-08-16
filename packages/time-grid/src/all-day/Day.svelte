@@ -15,15 +15,12 @@
     let {highlightedDates, theme, _interaction, _today} = getContext('state');
 
     let el = $state();
-    let dayChunks, dayBgChunks;
-    let isToday;
-    let highlight;
     let refs = $state([]);
 
-    dayChunks = $derived(chunks.filter(chunk => datesEqual(chunk.date, date)));
-    dayBgChunks = $derived(bgChunks.filter(bgChunk => datesEqual(bgChunk.date, date)));
-    isToday = $derived(datesEqual(date, $_today));
-    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
+    const dayChunks = $derived(chunks.filter(chunk => datesEqual(chunk.date, date)));
+    const dayBgChunks = $derived(bgChunks.filter(bgChunk => datesEqual(bgChunk.date, date)));
+    const isToday = $derived(datesEqual(date, $_today));
+    const highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
     $effect(() => {
         if (el) {

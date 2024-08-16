@@ -12,7 +12,7 @@
 
     let {_viewDates, _events, _iEvents, _queue2, _resHs, hiddenDays, theme} = getContext('state');
 
-    let chunks = $state(), bgChunks = $state(), longChunks = $state(), iChunks = $state([]);
+    let chunks = $state(), bgChunks = $state(), longChunks = $state();
 
     let start = $state();
     let end = $state();
@@ -52,7 +52,7 @@
         reposition();
     });
 
-    iChunks = $derived($_iEvents.map(event => {
+    const iChunks = $derived($_iEvents.map(event => {
         let chunk;
         if (event && eventIntersects(event, start, end, resource)) {
             chunk = createEventChunk(event, start, end);

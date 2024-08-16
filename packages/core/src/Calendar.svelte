@@ -1,7 +1,6 @@
 <script>
     import './styles/index.scss';
     import {setContext, beforeUpdate, afterUpdate} from 'svelte';
-    import {destroy_component, get_current_component} from 'svelte/internal';
     import {get} from 'svelte/store';
     import {diff} from './storage/options';
     import State from './storage/state';
@@ -18,7 +17,8 @@
         flushDebounce,
         hasYScroll,
         listView,
-        task, prevDate, nextDate
+        task, prevDate, nextDate,
+        destroy_component, get_current_component
     } from './lib.js';
 
     export let plugins = [];

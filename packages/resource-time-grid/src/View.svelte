@@ -6,9 +6,7 @@
 
     let {datesAboveResources, _viewDates, _viewResources, _intlDayHeader, _intlDayHeaderAL, allDaySlot, theme} = getContext('state');
 
-    let loops;
-
-    loops = $derived(
+    const loops = $derived(
         $datesAboveResources ? [$_viewDates, $_viewResources] : [$_viewResources, $_viewDates]
     );
 

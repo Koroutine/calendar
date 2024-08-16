@@ -2,13 +2,15 @@
     import {getContext} from 'svelte';
     import {createDate, cloneDate, setContent, setMidnight, nextDate, prevDate} from './lib.js';
 
-    export let buttons;
+    let {
+        buttons: buttons
+    } = $props();
 
     let {_currentRange, _viewTitle, buttonText, customButtons, date, duration, hiddenDays, theme, view} = getContext('state');
 
-    let today = setMidnight(createDate()), isToday;
+    let today = setMidnight(createDate());
 
-    isToday = $derived(today >= $_currentRange.start && today < $_currentRange.end || null);
+    const isToday = $derived(today >= $_currentRange.start && today < $_currentRange.end || null);
 
     function prev() {
         $date = prevDate($date, $duration, $hiddenDays);

@@ -1,6 +1,6 @@
 <script>
-    import {afterUpdate, getContext, onMount} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {getContext, onMount} from 'svelte';
+    import {is_function} from './utils.js';
     import {
         createEventContent,
         toEventWithLocalDates,
@@ -22,14 +22,12 @@
         _view, _intlEventTime, _interaction, _tasks} = getContext('state');
 
     let el = $state();
-    let event;
     let classes = $state();
     let style = $state();
     let content = $state();
     let timeText = $state();
-    let onclick;
 
-    event = $derived(chunk.event);
+    const event = $derived(chunk.event);
 
     $effect(() => {
         // Class & Style
@@ -66,7 +64,7 @@
         }
     });
 
-    afterUpdate(() => {
+    $effect(() => {
         if (is_function($eventAllUpdated)) {
             task(() => $eventAllUpdated({view: toViewWithLocalDates($_view)}), 'eau', _tasks);
         }
@@ -78,7 +76,7 @@
             : undefined;
     }
 
-    onclick = $derived(createHandler($eventClick));
+    const onclick = $derived(createHandler($eventClick));
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->

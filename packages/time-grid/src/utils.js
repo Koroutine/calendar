@@ -57,3 +57,5 @@ export function createAllDayContent(allDayContent) {
 
     return content;
 }
+
+export { is_function } from "svelte/internal";

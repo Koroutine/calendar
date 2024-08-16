@@ -1,6 +1,5 @@
 <script>
     import {getContext} from 'svelte';
-    import {is_function, listen, run_all} from 'svelte/internal';
     import {
         addDay,
         addDuration,
@@ -20,7 +19,7 @@
         toViewWithLocalDates,
         listView, timelineView
     } from '@event-calendar/core';
-    import {animate, limit} from './utils';
+    import {is_function, listen, run_all, animate, limit} from './utils';
 
     let {_iEvents, _iClass, _events, _view, _dayGrid, _draggable, _bodyEl, dateClick, dragScroll, datesAboveResources,
         eventDragMinDistance, eventDragStart, eventDragStop, eventDrop, eventLongPressDelay,

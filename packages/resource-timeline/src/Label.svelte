@@ -1,6 +1,6 @@
 <script>
     import {getContext, onMount} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {is_function} from './utils.js';
     import {setContent, toLocalDate} from '@event-calendar/core';
 
     let {

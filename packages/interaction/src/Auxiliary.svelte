@@ -1,6 +1,6 @@
 <script>
     import {getContext} from 'svelte';
-    import {listen} from 'svelte/internal';
+    import {listen} from './utils.js';
     import {bgEvent, helperEvent} from '@event-calendar/core';
     import Action from './Action.svelte';
     import Pointer from './Pointer.svelte';
@@ -11,14 +11,14 @@
 
     $_interaction.resizer = Resizer;
 
-    const $_draggable = $derived(
+    $_draggable = 
         event => (event.startEditable ?? $eventStartEditable) || (event.editable ?? $editable)
-    );
+   
 
-    const $_iClasses = $derived((className, event) => {
+    $_iClasses = (className, event) => {
         let {display} = event;
         return helperEvent(display) ? [$theme[display]] : (!bgEvent(display) && $_draggable(event) ? [$theme.draggable] : []);
-    });
+    }
 
     $effect(() => {
         if ($_bodyEl) {

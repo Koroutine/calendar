@@ -1,6 +1,6 @@
 <script>
     import {getContext} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {is_function} from './utils.js';
     import {addDay, cloneDate, toViewWithLocalDates, setContent, bgEvent} from '@event-calendar/core';
     import Day from './Day.svelte';
 

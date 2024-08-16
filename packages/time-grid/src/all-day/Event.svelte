@@ -1,6 +1,6 @@
 <script>
-    import {afterUpdate, getContext, onMount} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {getContext, onMount} from 'svelte';
+    import {is_function} from '../utils.js';
     import {
         createEventClasses,
         createEventContent,
@@ -26,16 +26,14 @@
         _view, _intlEventTime, _interaction, _iClasses, _tasks} = getContext('state');
 
     let el = $state();
-    let event;
     let classes = $state();
     let style = $state();
     let content = $state();
     let timeText = $state();
     let margin = $state(1);
     let display = $state();
-    let onclick;
 
-    event = $derived(chunk.event);
+    const event = $derived(chunk.event);
 
     $effect(() => {
         display = event.display;
@@ -66,9 +64,9 @@
         ].join(' ');
     });
 
-    [timeText, content] = $derived(
-        createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view)
-    );
+    $effect(() => {
+      [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
+    })
 
     onMount(() => {
         if (is_function($eventDidMount)) {
@@ -81,7 +79,7 @@
         }
     });
 
-    afterUpdate(() => {
+    $effect(() => {
         if (is_function($eventAllUpdated) && !helperEvent(display)) {
             task(() => $eventAllUpdated({view: toViewWithLocalDates($_view)}), 'eau', _tasks);
         }
@@ -106,7 +104,7 @@
         margin = repositionEvent(chunk, longChunks, height(el));
     }
 
-    onclick = $derived(createHandler($eventClick, display));
+    const onclick = $derived(createHandler($eventClick, display));
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->

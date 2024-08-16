@@ -3,10 +3,9 @@
 
     let {slotDuration, slotHeight, theme, _now, _today, _slotTimeLimits} = getContext('state');
 
-    let start;
     let top = $state(0);
 
-    start = $derived(($_now - $_today) / 1000 / 60);
+    const start = $derived(($_now - $_today) / 1000 / 60);
 
     $effect(() => {
         // Style

@@ -9,7 +9,9 @@
 
     let el = $state();
 
-    const $_bodyEl = $derived(el);
+    $effect(() => {
+      $_bodyEl = el;
+    })
 
     function handleScroll() {
         $_headerEl.scrollLeft = $_bodyEl.scrollLeft;

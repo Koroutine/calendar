@@ -24,8 +24,7 @@
         _interaction, _today, _slotTimeLimits} = getContext('state');
 
     let el = $state();
-    let chunks = $state(), bgChunks = $state(), iChunks = $state([]);
-    let isToday, highlight;
+    let chunks = $state(), bgChunks = $state();
 
     let start = $state(), end = $state();
 
@@ -49,12 +48,12 @@
         groupEventChunks(chunks);
     });
 
-    iChunks = $derived($_iEvents.map(
+    const iChunks = $derived($_iEvents.map(
         event => event && eventIntersects(event, start, end, resource) ? createEventChunk(event, start, end) : null
     ));
 
-    isToday = $derived(datesEqual(date, $_today));
-    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
+    const isToday = $derived(datesEqual(date, $_today));
+    const highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
     function dateFromPoint(x, y) {
         y -= rect(el).top;

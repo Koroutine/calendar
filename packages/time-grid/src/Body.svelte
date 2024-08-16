@@ -7,8 +7,10 @@
     let el = $state();
     let compact = $state();
     let lines = $state([]);
-
-    const $_bodyEl = $derived(el);
+    
+    $effect(() => {
+      $_bodyEl = el;
+    })
 
     $effect(() => {
         compact = $slotDuration.seconds >= 3600;

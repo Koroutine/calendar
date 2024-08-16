@@ -8,9 +8,7 @@
 
     let {theme, eventDurationEditable, editable} = getContext('state');
 
-    let resizable;
-
-    resizable = $derived(!bgEvent(event.display) &&
+    let resizable = $derived(!bgEvent(event.display) &&
         !helperEvent(event.display) && (
             (event.durationEditable ?? $eventDurationEditable) ||
             (event.editable ?? $editable)

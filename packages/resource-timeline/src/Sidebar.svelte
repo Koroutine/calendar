@@ -1,5 +1,5 @@
 <script>
-    import {getContext, afterUpdate} from 'svelte';
+    import {getContext} from 'svelte';
     import {max} from '@event-calendar/core';
     import Label from './Label.svelte';
 
@@ -7,7 +7,7 @@
 
     let titleHeight = $state(0);
 
-    afterUpdate(() => {
+    $effect(() => {
         titleHeight = $_headerEl.clientHeight;
     });
 </script>

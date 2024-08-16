@@ -1,6 +1,6 @@
 <script>
     import {getContext, tick} from 'svelte';
-    import {is_function} from 'svelte/internal';
+    import {is_function} from './utils.js';
     import {datesEqual, setContent, createEventChunk, addDay, cloneDate, assign, setPayload, toISOString,
         keyEnter, runReposition} from '@event-calendar/core';
     import Event from './Event.svelte';
@@ -20,15 +20,15 @@
 
     let el = $state();
     let dayChunks = $state(), dayBgChunks = $state();
-    let isToday;
     let otherMonth = $state();
     let highlight = $state();
     let hiddenEvents = $state(new Set());  // hidden events of this day
     let moreLink = $state('');
-    let showPopup;
     let refs = $state([]);
 
-    $_hiddenEvents[date.getTime()] = $derived(hiddenEvents);
+    $effect(() => {
+        $_hiddenEvents[date.getTime()] = hiddenEvents;
+    })
 
     $effect(() => {
         dayChunks = [];
@@ -45,7 +45,7 @@
         }
     });
 
-    isToday = $derived(datesEqual(date, $_today));
+    const isToday = $derived(datesEqual(date, $_today));
 
     $effect(() => {
         otherMonth = date.getUTCMonth() !== $currentDate.getUTCMonth();
@@ -65,7 +65,7 @@
         }
     });
 
-    showPopup = $derived($_popupDate && datesEqual(date, $_popupDate));
+    const showPopup = $derived($_popupDate && datesEqual(date, $_popupDate));
 
     $effect(() => {
         if (showPopup && longChunks && dayChunks) {

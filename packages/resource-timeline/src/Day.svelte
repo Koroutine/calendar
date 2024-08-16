@@ -27,8 +27,6 @@
     let {highlightedDates, slotDuration, slotWidth, theme, _interaction, _today, _dayTimeLimits} = getContext('state');
 
     let el = $state();
-    let dayChunks, dayBgChunks;
-    let isToday, highlight;
     let refs = $state([]);
     let slotTimeLimits = $state();
     let allDay = $state();
@@ -47,9 +45,9 @@
         pointerIdx = allDay ? 2 : 1;
     });
 
-    dayChunks = $derived(chunks.filter(chunkIntersects));
+    const dayChunks = $derived(chunks.filter(chunkIntersects));
 
-    dayBgChunks = $derived(
+    const dayBgChunks = $derived(
         bgChunks.filter(bgChunk => (!allDay || bgChunk.event.allDay) && chunkIntersects(bgChunk))
     );
 
@@ -57,8 +55,8 @@
         return datesEqual(chunk.date, date);
     }
 
-    isToday = $derived(datesEqual(date, $_today));
-    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
+    const isToday = $derived(datesEqual(date, $_today));
+    const highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
     function dateFromPoint(x, y) {
         x -= rect(el).left;

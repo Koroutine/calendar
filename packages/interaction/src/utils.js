@@ -1,16 +1,24 @@
-import {min, max} from '@event-calendar/core';
+import { min, max } from "@event-calendar/core";
 
 let busy = false;
 export function animate(fn) {
-    if (!busy) {
-        busy = true;
-        window.requestAnimationFrame(() => {
-            fn();
-            busy = false;
-        });
-    }
+  if (!busy) {
+    busy = true;
+    window.requestAnimationFrame(() => {
+      fn();
+      busy = false;
+    });
+  }
 }
 
 export function limit(value, minLimit, maxLimit) {
-    return max(minLimit, min(maxLimit, value));
+  return max(minLimit, min(maxLimit, value));
 }
+
+export {
+  destroy_component,
+  get_current_component,
+  is_function,
+  run_all,
+  listen,
+} from "svelte/internal";
