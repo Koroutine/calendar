@@ -33,25 +33,25 @@
     const ACTION_SELECT = 3;
     const ACTION_CLICK = 4;
     const ACTION_NO_ACTION = 5;
-    let action;
-    let interacting;
-    let event;
-    let display;
-    let date, newDate;
-    let resource, newResource;
-    let fromX, fromY;
-    let toX, toY;
-    let bodyEl, bodyRect, clipEl, clipRect;
-    let delta;
-    let allDay;
-    let iClass;
-    let minEnd;  // minimum end time when resizing
-    let selectStep;  // minimum selection step
-    let selected;  // whether selection has been made
-    let noDateClick;  // do not perform date click
-    let timer;  // timer for long press delays
-    let viewport;
-    let margin;
+    let action = $state();
+    let interacting = $state();
+    let event = $state();
+    let display = $state();
+    let date = $state(), newDate = $state();
+    let resource = $state(), newResource = $state();
+    let fromX = $state(), fromY = $state();
+    let toX = $state(), toY = $state();
+    let bodyEl = $state(), bodyRect = $state(), clipEl = $state(), clipRect = $state();
+    let delta = $state();
+    let allDay = $state();
+    let iClass = $state();
+    let minEnd = $state();  // minimum end time when resizing
+    let selectStep = $state();  // minimum selection step
+    let selected = $state();  // whether selection has been made
+    let noDateClick = $state();  // do not perform date click
+    let timer = $state();  // timer for long press delays
+    let viewport = $state();
+    let margin = $state();
 
     export function drag(eventToDrag, jsEvent, resize, forceDate, forceMargin) {
         if (!action) {

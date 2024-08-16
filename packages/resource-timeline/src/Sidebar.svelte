@@ -5,7 +5,7 @@
 
     let {_viewResources, _headerEl, _resHs, _sidebarEl, theme} = getContext('state');
 
-    let titleHeight = 0;
+    let titleHeight = $state(0);
 
     afterUpdate(() => {
         titleHeight = $_headerEl.clientHeight;

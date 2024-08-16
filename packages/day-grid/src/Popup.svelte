@@ -5,8 +5,8 @@
 
     let {buttonText, theme, _interaction, _intlDayPopover, _popupDate, _popupChunks} = getContext('state');
 
-    let el;
-    let style = '';
+    let el = $state();
+    let style = $state('');
 
     function position() {
         let dayEl = ancestor(el, 1);
@@ -62,10 +62,12 @@
         }
     }
 
-    $: if ($_popupChunks) {
-        // Fire reposition only on popup chunks change
-       reposition();
-    }
+    $effect(() => {
+        if ($_popupChunks) {
+            // Fire reposition only on popup chunks change
+           reposition();
+        }
+    });
 
     function close(e) {
         $_popupDate = null;

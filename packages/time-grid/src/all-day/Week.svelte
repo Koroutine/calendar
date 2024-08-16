@@ -10,28 +10,30 @@
     } from '@event-calendar/core';
     import Day from './Day.svelte';
 
-    export let dates;
-    export let resource = undefined;
+    let {
+        dates: dates,
+        resource: resource = undefined
+    } = $props();
 
     let {_events, _iEvents, _queue2, hiddenDays} = getContext('state');
 
-    let chunks, bgChunks, longChunks, iChunks = [];
+    let chunks = $state(), bgChunks = $state(), longChunks = $state(), iChunks = $state([]);
 
-    let start;
-    let end;
-    let refs = [];
+    let start = $state();
+    let end = $state();
+    let refs = $state([]);
 
-    $: {
+    $effect(() => {
         start = dates[0];
         end = addDay(cloneDate(dates.at(-1)));
-    }
+    });
 
-    let debounceHandle = {};
+    let debounceHandle = $state({});
     function reposition() {
         debounce(() => runReposition(refs, dates), debounceHandle, _queue2);
     }
 
-    $: {
+    $effect(() => {
         chunks = [];
         bgChunks = [];
         for (let event of $_events) {
@@ -48,9 +50,9 @@
         longChunks = prepareEventChunks(chunks, $hiddenDays);
         // Run reposition only when events get changed
         reposition();
-    }
+    });
 
-    $: iChunks = $_iEvents.map(event => {
+    iChunks = $derived($_iEvents.map(event => {
         let chunk;
         if (event && event.allDay && eventIntersects(event, start, end, resource)) {
             chunk = createEventChunk(event, start, end);
@@ -59,7 +61,7 @@
             chunk = null;
         }
         return chunk;
-    });
+    }));
 </script>
 
 {#each dates as date, i}

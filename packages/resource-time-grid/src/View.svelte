@@ -7,9 +7,12 @@
     let {datesAboveResources, _viewDates, _viewResources, _intlDayHeader, _intlDayHeaderAL, allDaySlot, theme} = getContext('state');
 
     let loops;
-    $: loops = $datesAboveResources ? [$_viewDates, $_viewResources] : [$_viewResources, $_viewDates];
 
-    let resourceLabels = [];
+    loops = $derived(
+        $datesAboveResources ? [$_viewDates, $_viewResources] : [$_viewResources, $_viewDates]
+    );
+
+    let resourceLabels = $state([]);
 </script>
 
 <div class="{$theme.header}">

@@ -16,30 +16,32 @@
     } from '@event-calendar/core';
     import {repositionEvent, getSlotTimeLimits} from './lib.js';
 
-    export let date;
-    export let chunk;
-    export let dayChunks = [];
-    export let longChunks = {};
-    export let resource = undefined;
+    let {
+        date: date,
+        chunk: chunk,
+        dayChunks: dayChunks = [],
+        longChunks: longChunks = {},
+        resource: resource = undefined
+    } = $props();
 
     let {displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor,eventColor, eventContent, eventClick,
         eventDidMount, eventClassNames, eventMouseEnter, eventMouseLeave, resources, slotDuration, slotWidth, theme,
         _view, _intlEventTime, _interaction, _iClasses, _dayTimeLimits, _tasks} = getContext('state');
 
-    let el;
+    let el = $state();
     let event;
-    let display;
-    let classes;
-    let style;
-    let content;
-    let timeText;
+    let display = $state();
+    let classes = $state();
+    let style = $state();
+    let content = $state();
+    let timeText = $state();
     let onclick;
-    let margin = helperEvent(chunk.event.display) ? 1 : 0;
-    let width = 0;
+    let margin = $state(helperEvent(chunk.event.display) ? 1 : 0);
+    let width = $state(0);
 
-    $: event = chunk.event;
+    event = $derived(chunk.event);
 
-    $: {
+    $effect(() => {
         display = event.display;
 
         // Style
@@ -119,10 +121,11 @@
             ...$_iClasses([], event),
             ...createEventClasses($eventClassNames, event, $_view)
         ].join(' ');
-    }
+    });
 
-    // Content
-    $: [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
+    [timeText, content] = $derived(
+        createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view)
+    );
 
     onMount(() => {
         if (is_function($eventDidMount)) {
@@ -153,8 +156,7 @@
             : undefined;
     }
 
-    // Onclick handler
-    $: onclick = !bgEvent(display) && createHandler($eventClick, display);
+    onclick = $derived(!bgEvent(display) && createHandler($eventClick, display));
 
     export function reposition() {
         if (!el) {

@@ -5,17 +5,17 @@
 
     let {headerToolbar, theme} = getContext('state');
 
-    let sections = {
+    let sections = $state({
         start: [],
         center: [],
         end: []
-    };
+    });
 
-    $: {
+    $effect(() => {
         for (let key of keys(sections)) {
             sections[key] = $headerToolbar[key].split(' ').map(group => group.split(','));
         }
-    }
+    });
 </script>
 
 <nav class="{$theme.toolbar}">

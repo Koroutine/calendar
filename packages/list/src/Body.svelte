@@ -6,9 +6,9 @@
 
     let {_bodyEl, _events, _view, _viewDates, noEventsClick, noEventsContent, theme} = getContext('state');
 
-    let noEvents, content;
+    let noEvents = $state(), content = $state();
 
-    $: {
+    $effect(() => {
         noEvents = true;
         if ($_viewDates.length) {
             let start = $_viewDates[0];
@@ -20,14 +20,14 @@
                 }
             }
         }
-    }
+    });
 
-    $: {
+    $effect(() => {
         content = is_function($noEventsContent) ? $noEventsContent() : $noEventsContent;
         if (typeof content === 'string') {
             content = {html: content};
         }
-    }
+    });
 
     function handleClick(jsEvent) {
         if (is_function($noEventsClick)) {

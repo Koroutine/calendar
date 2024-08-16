@@ -14,16 +14,18 @@
     } from '@event-calendar/core';
     import Event from './Event.svelte';
 
-    export let date;
+    let {
+        date: date
+    } = $props();
 
     let {_events, _interaction, _intlListDay, _intlListDaySide, _today, highlightedDates, theme} = getContext('state');
 
-    let el;
-    let chunks;
+    let el = $state();
+    let chunks = $state();
     let isToday, highlight;
     let datetime;
 
-    $: {
+    $effect(() => {
         chunks = [];
         let start = date;
         let end = addDay(cloneDate(date));
@@ -34,16 +36,17 @@
             }
         }
         sortEventChunks(chunks);
-    }
+    });
 
-    $: isToday = datesEqual(date, $_today);
-    $: highlight = $highlightedDates.some(d => datesEqual(d, date));
-    $: datetime = toISOString(date, 10);
+    isToday = $derived(datesEqual(date, $_today));
+    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
+    datetime = $derived(toISOString(date, 10));
 
-    // dateFromPoint
-    $: if (el) {
-        setPayload(el, () => ({allDay: true, date, resource: undefined, dayEl: el}));
-    }
+    $effect(() => {
+        if (el) {
+            setPayload(el, () => ({allDay: true, date, resource: undefined, dayEl: el}));
+        }
+    });
 </script>
 
 {#if chunks.length}

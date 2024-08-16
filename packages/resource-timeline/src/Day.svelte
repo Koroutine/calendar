@@ -15,44 +15,50 @@
     import {getSlotTimeLimits} from './lib.js';
     import Event from './Event.svelte';
 
-    export let date;
-    export let resource;
-    export let chunks;
-    export let bgChunks;
-    export let longChunks;
-    export let iChunks = [];
+    let {
+        date: date,
+        resource: resource,
+        chunks: chunks,
+        bgChunks: bgChunks,
+        longChunks: longChunks,
+        iChunks: iChunks = []
+    } = $props();
 
     let {highlightedDates, slotDuration, slotWidth, theme, _interaction, _today, _dayTimeLimits} = getContext('state');
 
-    let el;
+    let el = $state();
     let dayChunks, dayBgChunks;
     let isToday, highlight;
-    let refs = [];
-    let slotTimeLimits;
-    let allDay;
-    let pointerIdx = 1;
+    let refs = $state([]);
+    let slotTimeLimits = $state();
+    let allDay = $state();
+    let pointerIdx = $state(1);
 
-    let start, end;
+    let start = $state(), end = $state();
 
-    $: {
+    $effect(() => {
         slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, date);
         start = addDuration(cloneDate(date), slotTimeLimits.min);
         end = addDuration(cloneDate(date), slotTimeLimits.max);
-    }
-    $: {
+    });
+
+    $effect(() => {
         allDay = !toSeconds($slotDuration);
         pointerIdx = allDay ? 2 : 1;
-    }
+    });
 
-    $: dayChunks = chunks.filter(chunkIntersects);
-    $: dayBgChunks = bgChunks.filter(bgChunk => (!allDay || bgChunk.event.allDay) && chunkIntersects(bgChunk));
+    dayChunks = $derived(chunks.filter(chunkIntersects));
+
+    dayBgChunks = $derived(
+        bgChunks.filter(bgChunk => (!allDay || bgChunk.event.allDay) && chunkIntersects(bgChunk))
+    );
 
     function chunkIntersects(chunk) {
         return datesEqual(chunk.date, date);
     }
 
-    $: isToday = datesEqual(date, $_today);
-    $: highlight = $highlightedDates.some(d => datesEqual(d, date));
+    isToday = $derived(datesEqual(date, $_today));
+    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
     function dateFromPoint(x, y) {
         x -= rect(el).left;
@@ -70,9 +76,11 @@
         };
     }
 
-    $: if (el) {
-        setPayload(el, dateFromPoint);
-    }
+    $effect(() => {
+        if (el) {
+            setPayload(el, dateFromPoint);
+        }
+    });
 
     export function reposition() {
         return max(...runReposition(refs, dayChunks));

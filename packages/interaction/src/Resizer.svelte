@@ -2,16 +2,19 @@
     import {getContext} from 'svelte';
     import {bgEvent, helperEvent} from '@event-calendar/core';
 
-    export let event;
+    let {
+        event: event
+    } = $props();
 
     let {theme, eventDurationEditable, editable} = getContext('state');
 
     let resizable;
-    $: resizable = !bgEvent(event.display) &&
+
+    resizable = $derived(!bgEvent(event.display) &&
         !helperEvent(event.display) && (
             (event.durationEditable ?? $eventDurationEditable) ||
             (event.editable ?? $editable)
-        )
+        ));
 </script>
 
 {#if resizable}

@@ -7,20 +7,22 @@
     let {_bodyEl, _headerEl, _sidebarEl, _dayTimes, _dayTimeLimits, _viewResources, _viewDates,
         scrollTime, slotDuration, slotWidth, theme} = getContext('state');
 
-    let el;
+    let el = $state();
 
-    $: $_bodyEl = el;
+    const $_bodyEl = $derived(el);
 
     function handleScroll() {
         $_headerEl.scrollLeft = $_bodyEl.scrollLeft;
         $_sidebarEl.scrollTop = $_bodyEl.scrollTop;
     }
 
-    $: if (el) {
-        $_viewDates;
-        $scrollTime;
-        scrollToTime()
-    }
+    $effect(() => {
+        if (el) {
+            $_viewDates;
+            $scrollTime;
+            scrollToTime()
+        }
+    });
 
     function scrollToTime() {
         let slotTimeLimits = getSlotTimeLimits($_dayTimeLimits, $_viewDates[0]);

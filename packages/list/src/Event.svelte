@@ -13,23 +13,25 @@
         task
     } from '@event-calendar/core';
 
-    export let chunk;
+    let {
+        chunk: chunk
+    } = $props();
 
     let {displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventColor, eventContent,
         eventClassNames, eventClick, eventDidMount, eventMouseEnter, eventMouseLeave, resources, theme,
         _view, _intlEventTime, _interaction, _tasks} = getContext('state');
 
-    let el;
+    let el = $state();
     let event;
-    let classes;
-    let style;
-    let content;
-    let timeText;
+    let classes = $state();
+    let style = $state();
+    let content = $state();
+    let timeText = $state();
     let onclick;
 
-    $: event = chunk.event;
+    event = $derived(chunk.event);
 
-    $: {
+    $effect(() => {
         // Class & Style
         style = '';
         let bgColor = event.backgroundColor || resourceBackgroundColor(event, $resources) || $eventBackgroundColor || $eventColor;
@@ -46,12 +48,12 @@
             $theme.event,
             ...createEventClasses($eventClassNames, event, $_view)
         ].join(' ');
-    }
+    });
 
-    $: {
+    $effect(() => {
         // Content
         [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
-    }
+    });
 
     onMount(() => {
         if (is_function($eventDidMount)) {
@@ -76,8 +78,7 @@
             : undefined;
     }
 
-    // Onclick handler
-    $: onclick = createHandler($eventClick);
+    onclick = $derived(createHandler($eventClick));
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->

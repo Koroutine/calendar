@@ -6,7 +6,7 @@
     let {allDayContent, theme, _times} = getContext('state');
 
     let allDayText;
-    $: allDayText = createAllDayContent($allDayContent);
+    allDayText = $derived(createAllDayContent($allDayContent));
 </script>
 
 <div class="{$theme.sidebar}">

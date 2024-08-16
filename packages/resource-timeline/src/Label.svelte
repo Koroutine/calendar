@@ -3,25 +3,28 @@
     import {is_function} from 'svelte/internal';
     import {setContent, toLocalDate} from '@event-calendar/core';
 
-    export let resource;
-    export let date = undefined;
+    let {
+        resource: resource,
+        date: date = undefined
+    } = $props();
 
     let {resourceLabelContent, resourceLabelDidMount} = getContext('state');
 
-    let el;
-    let content;
+    let el = $state();
+    let content = $state();
 
-    // Content
-    $: if ($resourceLabelContent) {
-        content = is_function($resourceLabelContent)
-            ? $resourceLabelContent({
-                resource,
-                date: date ? toLocalDate(date) : undefined,
-            })
-            : $resourceLabelContent;
-    } else {
-        content = resource.title;
-    }
+    $effect(() => {
+        if ($resourceLabelContent) {
+            content = is_function($resourceLabelContent)
+                ? $resourceLabelContent({
+                    resource,
+                    date: date ? toLocalDate(date) : undefined,
+                })
+                : $resourceLabelContent;
+        } else {
+            content = resource.title;
+        }
+    });
 
     onMount(() => {
         if (is_function($resourceLabelDidMount)) {

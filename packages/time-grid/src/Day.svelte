@@ -15,24 +15,26 @@
     import Event from './Event.svelte';
     import NowIndicator from './NowIndicator.svelte';
 
-    export let date;
-    export let resource = undefined;
+    let {
+        date: date,
+        resource: resource = undefined
+    } = $props();
 
     let {_events, _iEvents, highlightedDates, nowIndicator, slotDuration, slotHeight, theme,
         _interaction, _today, _slotTimeLimits} = getContext('state');
 
-    let el;
-    let chunks, bgChunks, iChunks = [];
+    let el = $state();
+    let chunks = $state(), bgChunks = $state(), iChunks = $state([]);
     let isToday, highlight;
 
-    let start, end;
+    let start = $state(), end = $state();
 
-    $: {
+    $effect(() => {
         start = addDuration(cloneDate(date), $_slotTimeLimits.min);
         end = addDuration(cloneDate(date), $_slotTimeLimits.max);
-    }
+    });
 
-    $: {
+    $effect(() => {
         chunks = [];
         bgChunks = [];
         for (let event of $_events) {
@@ -45,14 +47,14 @@
             }
         }
         groupEventChunks(chunks);
-    }
+    });
 
-    $: iChunks = $_iEvents.map(
+    iChunks = $derived($_iEvents.map(
         event => event && eventIntersects(event, start, end, resource) ? createEventChunk(event, start, end) : null
-    );
+    ));
 
-    $: isToday = datesEqual(date, $_today);
-    $: highlight = $highlightedDates.some(d => datesEqual(d, date));
+    isToday = $derived(datesEqual(date, $_today));
+    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
     function dateFromPoint(x, y) {
         y -= rect(el).top;
@@ -68,9 +70,11 @@
         };
     }
 
-    $: if (el) {
-        setPayload(el, dateFromPoint);
-    }
+    $effect(() => {
+        if (el) {
+            setPayload(el, dateFromPoint);
+        }
+    });
 </script>
 
 <div

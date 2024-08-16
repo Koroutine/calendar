@@ -6,29 +6,31 @@
     import Event from './Event.svelte';
     import Popup from './Popup.svelte';
 
-    export let date;
-    export let chunks;
-    export let bgChunks;
-    export let longChunks;
-    export let iChunks = [];
-    export let dates;
+    let {
+        date: date,
+        chunks: chunks,
+        bgChunks: bgChunks,
+        longChunks: longChunks,
+        iChunks: iChunks = [],
+        dates: dates
+    } = $props();
 
     let {date: currentDate, dayMaxEvents, highlightedDates, moreLinkContent, theme,
         _hiddenEvents, _intlDayCell, _popupDate, _popupChunks, _today, _interaction, _queue} = getContext('state');
 
-    let el;
-    let dayChunks, dayBgChunks;
+    let el = $state();
+    let dayChunks = $state(), dayBgChunks = $state();
     let isToday;
-    let otherMonth;
-    let highlight;
-    let hiddenEvents = new Set();  // hidden events of this day
-    let moreLink = '';
+    let otherMonth = $state();
+    let highlight = $state();
+    let hiddenEvents = $state(new Set());  // hidden events of this day
+    let moreLink = $state('');
     let showPopup;
-    let refs = [];
+    let refs = $state([]);
 
-    $: $_hiddenEvents[date.getTime()] = hiddenEvents;
+    $_hiddenEvents[date.getTime()] = $derived(hiddenEvents);
 
-    $: {
+    $effect(() => {
         dayChunks = [];
         dayBgChunks = bgChunks.filter(bgChunk => datesEqual(bgChunk.date, date));
         hiddenEvents.clear();
@@ -41,36 +43,42 @@
                 // }
             }
         }
-    }
+    });
 
-    $: isToday = datesEqual(date, $_today);
-    $: {
+    isToday = $derived(datesEqual(date, $_today));
+
+    $effect(() => {
         otherMonth = date.getUTCMonth() !== $currentDate.getUTCMonth();
         highlight = $highlightedDates.some(d => datesEqual(d, date));
-    }
+    });
 
-    $: if ($_hiddenEvents && hiddenEvents.size) {  // make Svelte update this block on $_hiddenEvents update
-        let text = '+' + hiddenEvents.size + ' more';
-        if ($moreLinkContent) {
-            moreLink = is_function($moreLinkContent)
-                ? $moreLinkContent({num: hiddenEvents.size, text})
-                : $moreLinkContent;
-        } else {
-            moreLink = text;
+    $effect(() => {
+        if ($_hiddenEvents && hiddenEvents.size) {  // make Svelte update this block on $_hiddenEvents update
+            let text = '+' + hiddenEvents.size + ' more';
+            if ($moreLinkContent) {
+                moreLink = is_function($moreLinkContent)
+                    ? $moreLinkContent({num: hiddenEvents.size, text})
+                    : $moreLinkContent;
+            } else {
+                moreLink = text;
+            }
         }
-    }
+    });
 
-    $: showPopup = $_popupDate && datesEqual(date, $_popupDate);
+    showPopup = $derived($_popupDate && datesEqual(date, $_popupDate));
 
-    $: if (showPopup && longChunks && dayChunks) {
-        // Let chunks to reposition then set popup chunks
-        tick().then(setPopupChunks);
-    }
+    $effect(() => {
+        if (showPopup && longChunks && dayChunks) {
+            // Let chunks to reposition then set popup chunks
+            tick().then(setPopupChunks);
+        }
+    });
 
-    // dateFromPoint
-    $: if (el) {
-        setPayload(el, () => ({allDay: true, date, resource: undefined, dayEl: el}));
-    }
+    $effect(() => {
+        if (el) {
+            setPayload(el, () => ({allDay: true, date, resource: undefined, dayEl: el}));
+        }
+    });
 
     function showMore() {
         $_popupDate = date;

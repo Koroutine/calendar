@@ -11,16 +11,20 @@
 
     $_interaction.resizer = Resizer;
 
-    $: $_draggable = event => (event.startEditable ?? $eventStartEditable) || (event.editable ?? $editable);
+    const $_draggable = $derived(
+        event => (event.startEditable ?? $eventStartEditable) || (event.editable ?? $editable)
+    );
 
-    $: $_iClasses = (className, event) => {
+    const $_iClasses = $derived((className, event) => {
         let {display} = event;
         return helperEvent(display) ? [$theme[display]] : (!bgEvent(display) && $_draggable(event) ? [$theme.draggable] : []);
-    };
+    });
 
-    $: if ($_bodyEl) {
-        listen($_bodyEl, 'scroll', bodyScrollHandler);
-    }
+    $effect(() => {
+        if ($_bodyEl) {
+            listen($_bodyEl, 'scroll', bodyScrollHandler);
+        }
+    });
 
     function bodyScrollHandler() {
         for (let component of Object.values($_interaction)) {

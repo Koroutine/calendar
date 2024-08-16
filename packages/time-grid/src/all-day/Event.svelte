@@ -16,26 +16,28 @@
         task, rect, ancestor, bgEvent
     } from '@event-calendar/core';
 
-    export let chunk;
-    export let longChunks = {};
+    let {
+        chunk: chunk,
+        longChunks: longChunks = {}
+    } = $props();
 
     let {displayEventEnd, eventAllUpdated, eventBackgroundColor, eventTextColor, eventClick, eventColor, eventContent,
         eventClassNames, eventDidMount, eventMouseEnter, eventMouseLeave, resources, theme,
         _view, _intlEventTime, _interaction, _iClasses, _tasks} = getContext('state');
 
-    let el;
+    let el = $state();
     let event;
-    let classes;
-    let style;
-    let content;
-    let timeText;
-    let margin = 1;
-    let display;
+    let classes = $state();
+    let style = $state();
+    let content = $state();
+    let timeText = $state();
+    let margin = $state(1);
+    let display = $state();
     let onclick;
 
-    $: event = chunk.event;
+    event = $derived(chunk.event);
 
-    $: {
+    $effect(() => {
         display = event.display;
 
         // Class & Style
@@ -62,10 +64,11 @@
             ...$_iClasses([], event),
             ...createEventClasses($eventClassNames, event, $_view)
         ].join(' ');
-    }
+    });
 
-    // Content
-    $: [timeText, content] = createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view);
+    [timeText, content] = $derived(
+        createEventContent(chunk, $displayEventEnd, $eventContent, $theme, $_intlEventTime, $_view)
+    );
 
     onMount(() => {
         if (is_function($eventDidMount)) {
@@ -103,8 +106,7 @@
         margin = repositionEvent(chunk, longChunks, height(el));
     }
 
-    // Onclick handler
-    $: onclick = createHandler($eventClick, display);
+    onclick = $derived(createHandler($eventClick, display));
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->

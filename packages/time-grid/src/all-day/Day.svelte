@@ -3,31 +3,33 @@
     import {datesEqual, runReposition, setPayload} from '@event-calendar/core';
     import Event from './Event.svelte';
 
-    export let date;
-    export let chunks;
-    export let bgChunks;
-    export let longChunks;
-    export let iChunks = [];
-    export let resource = undefined;
+    let {
+        date: date,
+        chunks: chunks,
+        bgChunks: bgChunks,
+        longChunks: longChunks,
+        iChunks: iChunks = [],
+        resource: resource = undefined
+    } = $props();
 
     let {highlightedDates, theme, _interaction, _today} = getContext('state');
 
-    let el;
+    let el = $state();
     let dayChunks, dayBgChunks;
     let isToday;
     let highlight;
-    let refs = [];
+    let refs = $state([]);
 
-    $: dayChunks = chunks.filter(chunk => datesEqual(chunk.date, date));
-    $: dayBgChunks = bgChunks.filter(bgChunk => datesEqual(bgChunk.date, date));
+    dayChunks = $derived(chunks.filter(chunk => datesEqual(chunk.date, date)));
+    dayBgChunks = $derived(bgChunks.filter(bgChunk => datesEqual(bgChunk.date, date)));
+    isToday = $derived(datesEqual(date, $_today));
+    highlight = $derived($highlightedDates.some(d => datesEqual(d, date)));
 
-    $: isToday = datesEqual(date, $_today);
-    $: highlight = $highlightedDates.some(d => datesEqual(d, date));
-
-    // dateFromPoint
-    $: if (el) {
-        setPayload(el, () => ({allDay: true, date, resource, dayEl: el}));
-    }
+    $effect(() => {
+        if (el) {
+            setPayload(el, () => ({allDay: true, date, resource, dayEl: el}));
+        }
+    });
 
     export function reposition() {
         runReposition(refs, dayChunks);

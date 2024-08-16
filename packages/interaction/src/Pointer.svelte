@@ -4,11 +4,13 @@
 
     let {_iEvents, slotDuration} = getContext('state');
 
-    let x = 0, y = 0;
+    let x = $state(0), y = $state(0);
 
-    $: if ($_iEvents[0]) {
-        removePointerEvent();
-    }
+    $effect(() => {
+        if ($_iEvents[0]) {
+            removePointerEvent();
+        }
+    });
 
     export function leave(jsEvent) {
         if (validEvent(jsEvent)) {

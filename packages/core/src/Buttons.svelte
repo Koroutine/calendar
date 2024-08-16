@@ -8,7 +8,7 @@
 
     let today = setMidnight(createDate()), isToday;
 
-    $: isToday = today >= $_currentRange.start && today < $_currentRange.end || null;
+    isToday = $derived(today >= $_currentRange.start && today < $_currentRange.end || null);
 
     function prev() {
         $date = prevDate($date, $duration, $hiddenDays);

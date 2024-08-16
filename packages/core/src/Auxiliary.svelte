@@ -5,10 +5,11 @@
 
     let {datesSet, _auxiliary, _activeRange, _queue, _view} = getContext('state');
 
-    // Set up datesSet callback
-    $: runDatesSet($_activeRange);
+    $effect(() => {
+        runDatesSet($_activeRange);
+    });
 
-    let debounceHandle = {};
+    let debounceHandle = $state({});
     function runDatesSet(_activeRange) {
         if (is_function($datesSet)) {
             debounce(() => $datesSet({

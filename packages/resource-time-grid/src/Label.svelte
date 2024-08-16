@@ -3,28 +3,31 @@
     import {is_function} from 'svelte/internal';
     import {setContent, toLocalDate} from '@event-calendar/core';
 
-    export let resource;
-    export let date = undefined;
+    let {
+        resource: resource,
+        date: date = undefined
+    } = $props();
 
     let {resourceLabelContent, resourceLabelDidMount, _intlDayHeaderAL} = getContext('state');
 
     const dispatch = createEventDispatcher();
 
-    let el;
-    let content;
-    let ariaLabel;
+    let el = $state();
+    let content = $state();
+    let ariaLabel = $state();
 
-    // Content
-    $: if ($resourceLabelContent) {
-        content = is_function($resourceLabelContent)
-            ? $resourceLabelContent({
-                resource,
-                date: date ? toLocalDate(date) : undefined,
-            })
-            : $resourceLabelContent;
-    } else {
-        content = resource.title;
-    }
+    $effect(() => {
+        if ($resourceLabelContent) {
+            content = is_function($resourceLabelContent)
+                ? $resourceLabelContent({
+                    resource,
+                    date: date ? toLocalDate(date) : undefined,
+                })
+                : $resourceLabelContent;
+        } else {
+            content = resource.title;
+        }
+    });
 
     onMount(() => {
         if (is_function($resourceLabelDidMount)) {

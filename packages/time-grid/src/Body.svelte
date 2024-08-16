@@ -4,22 +4,24 @@
 
     let {_bodyEl, _viewDates, _slotTimeLimits, _times, scrollTime, slotDuration, slotHeight, theme} = getContext('state');
 
-    let el;
-    let compact;
-    let lines = [];
+    let el = $state();
+    let compact = $state();
+    let lines = $state([]);
 
-    $: $_bodyEl = el;
+    const $_bodyEl = $derived(el);
 
-    $: {
+    $effect(() => {
         compact = $slotDuration.seconds >= 3600;
         lines.length = $_times.length;
-    }
+    });
 
-    $: if (el) {
-        $_viewDates;
-        $scrollTime;
-        scrollToTime()
-    }
+    $effect(() => {
+        if (el) {
+            $_viewDates;
+            $scrollTime;
+            scrollToTime()
+        }
+    });
 
     function scrollToTime() {
         el.scrollTop = (($scrollTime.seconds - $_slotTimeLimits.min.seconds) / $slotDuration.seconds - 0.5) * $slotHeight;
