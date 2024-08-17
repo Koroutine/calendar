@@ -11,11 +11,11 @@
         end: []
     });
 
-    $effect(() => {
-        for (let key of keys(sections)) {
+
+    for (let key of keys(sections)) {
             sections[key] = $headerToolbar[key].split(' ').map(group => group.split(','));
-        }
-    });
+    }
+    
 </script>
 
 <nav class="{$theme.toolbar}">

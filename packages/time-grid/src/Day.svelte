@@ -43,6 +43,7 @@
   });
 
   $effect(() => {
+    console.log("Day", date);
     chunks = [];
     bgChunks = [];
     for (let event of $_events) {
