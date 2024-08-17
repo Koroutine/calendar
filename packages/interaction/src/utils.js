@@ -17,3 +17,7 @@ export function limit(value, minLimit, maxLimit) {
 export function is_function(value) {
   return typeof value === "function";
 }
+
+export function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}

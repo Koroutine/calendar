@@ -33,7 +33,7 @@
         debounce(() => runReposition(refs, dates), debounceHandle, _queue2);
     }
 
-    $effect(() => {
+    //$effect(() => {
         chunks = [];
         bgChunks = [];
         for (let event of $_events) {
@@ -50,7 +50,7 @@
         longChunks = prepareEventChunks(chunks, $hiddenDays);
         // Run reposition only when events get changed
         reposition();
-    });
+    //});
 
     const iChunks = $derived($_iEvents.map(event => {
         let chunk;

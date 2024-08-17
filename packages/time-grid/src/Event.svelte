@@ -15,6 +15,7 @@
     resourceTextColor,
     task,
   } from "@event-calendar/core";
+  import { writable } from "svelte/store";
 
   let { date: date, chunk: chunk } = $props();
 
@@ -43,17 +44,18 @@
     _tasks,
   } = getContext("state");
 
-  let el = $state();
-  let display = $state();
-  let classes = $state();
-  let style = $state();
+  let el;
+  let display = writable(chunk.event.display);
+  let classes = writable("");
+  let style = writable("");
   let content = $state();
   let timeText = $state();
 
   const event = $derived(chunk.event);
 
   $effect(() => {
-    display = event.display;
+
+    display.set(event.display);
 
     // Style
     let step = $slotDuration.seconds;
@@ -73,31 +75,31 @@
       event.textColor ||
       resourceTextColor(event, $resources) ||
       $eventTextColor;
-    style =
+
+    style.set(
       `top:${top}px;` +
-      `min-height:${height}px;` +
-      `height:${height}px;` +
-      `max-height:${maxHeight}px;`;
-    if (bgColor) {
-      style += `background-color:${bgColor};`;
-    }
-    if (txtColor) {
-      style += `color:${txtColor};`;
-    }
-    if ((!bgEvent(display) && !helperEvent(display)) || ghostEvent(display)) {
-      style +=
-        `z-index:${chunk.column + 1};` +
-        `left:${(100 / chunk.group.columns.length) * chunk.column}%;` +
-        `width:${(100 / chunk.group.columns.length) * ($slotEventOverlap ? 0.5 * (1 + chunk.group.columns.length - chunk.column) : 1)}%;`;
-    }
-    style += event.styles.join(";");
+        `min-height:${height}px;` +
+        `height:${height}px;` +
+        `max-height:${maxHeight}px;` +
+        (bgColor ? `background-color:${bgColor};` : "") +
+        (txtColor ? `color:${txtColor};` : "") +
+        ((!bgEvent($display) && !helperEvent($display)) || ghostEvent($display)
+          ? `z-index:${chunk.column + 1};` +
+            `left:${(100 / chunk.group.columns.length) * chunk.column}%;` +
+            `width:${(100 / chunk.group.columns.length) * ($slotEventOverlap ? 0.5 * (1 + chunk.group.columns.length - chunk.column) : 1)}%;`
+          : "") +
+        event.styles.join(";")
+    );
 
     // Class
-    classes = [
-      bgEvent(display) ? $theme.bgEvent : $theme.event,
-      ...$_iClasses([], event),
-      ...createEventClasses($eventClassNames, event, $_view),
-    ].join(" ");
+    classes.set(
+      [
+        bgEvent($display) ? $theme.bgEvent : $theme.event,
+        ...$_iClasses([], event),
+        ...createEventClasses($eventClassNames, event, $_view),
+      ].join(" ")
+    );
+
   });
 
   $effect(() => {
@@ -123,7 +125,7 @@
   });
 
   $effect(() => {
-    if (is_function($eventAllUpdated) && !helperEvent(display)) {
+    if (is_function($eventAllUpdated) && !helperEvent($display)) {
       task(
         () => $eventAllUpdated({ view: toViewWithLocalDates($_view) }),
         "eau",
@@ -132,8 +134,8 @@
     }
   });
 
-  function createHandler(fn, display) {
-    return !helperEvent(display) && is_function(fn)
+  function createHandler(fn, $display) {
+    return !helperEvent($display) && is_function(fn)
       ? (jsEvent) =>
           fn({
             event: toEventWithLocalDates(event),
@@ -151,23 +153,25 @@
   }
 
   const onclick = $derived(
-    !bgEvent(display) && createHandler($eventClick, display)
+    !bgEvent($display) && createHandler($eventClick, $display)
   );
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <article
   bind:this={el}
-  class={classes}
-  {style}
+  class={$classes}
+  style={$style}
   role={onclick ? "button" : undefined}
   tabindex={onclick ? 0 : undefined}
   {onclick}
   onkeydown={onclick && keyEnter(onclick)}
-  onmouseenter={createHandler($eventMouseEnter, display)}
-  onmouseleave={createHandler($eventMouseLeave, display)}
-  onpointerdown={!bgEvent(display) &&
-    !helperEvent(display) &&
+  onmouseenter={(e) => {
+    createHandler($eventMouseEnter, $display);
+  }}
+  onmouseleave={createHandler($eventMouseLeave, $display)}
+  onpointerdown={!bgEvent($display) &&
+    !helperEvent($display) &&
     createDragHandler($_interaction)}
 >
   <div class={$theme.eventBody} use:setContent={content}></div>

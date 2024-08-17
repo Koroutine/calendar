@@ -19,7 +19,7 @@
         toViewWithLocalDates,
         listView, timelineView
     } from '@event-calendar/core';
-    import { is_function } from 'utils';
+    import { is_function, clamp } from './utils';
 
     let {_iEvents, _iClass, _events, _view, _dayGrid, _draggable, _bodyEl, dateClick, dragScroll, datesAboveResources,
         eventDragMinDistance, eventDragStart, eventDragStop, eventDrop, eventLongPressDelay,

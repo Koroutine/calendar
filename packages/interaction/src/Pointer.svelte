@@ -64,6 +64,7 @@
     }
 
     function validEvent(jsEvent) {
+        if(!jsEvent) return false;
         return jsEvent.isPrimary && jsEvent.pointerType === 'mouse';
     }
 </script>

@@ -14,6 +14,7 @@
   import { groupEventChunks } from "./utils";
   import Event from "./Event.svelte";
   import NowIndicator from "./NowIndicator.svelte";
+  import { writable } from 'svelte/store';
 
   let { date: date, resource: resource = undefined } = $props();
 
@@ -31,37 +32,43 @@
   } = getContext("state");
 
   let el = $state();
-  let chunks = $state([]),
-    bgChunks = $state([]);
+  //let chunks = $state([]),
+    //bgChunks = $state([]);
 
-  let start = $state(),
-    end = $state();
+  let start = '',
+    end = '';
 
   $effect(() => {
     start = addDuration(cloneDate(date), $_slotTimeLimits.min);
     end = addDuration(cloneDate(date), $_slotTimeLimits.max);
   });
 
-  $effect(() => {
-    console.log("Day", date);
-    chunks = [];
-    bgChunks = [];
+const chunks = writable([]);
+const bgChunks = writable([]);
+
+$effect(() => {
+    const newChunks = [];
+    const newBgChunks = [];
+
     for (let event of $_events) {
-      if (
-        (!event.allDay || bgEvent(event.display)) &&
-        eventIntersects(event, start, end, resource)
-      ) {
+      if ((!event.allDay || bgEvent(event.display)) && eventIntersects(event, start, end, resource)) {
         let chunk = createEventChunk(event, start, end);
         switch (event.display) {
-          case "background":
-            bgChunks.push(chunk);
+          case 'background':
+            newBgChunks.push(chunk);
             break;
           default:
-            chunks.push(chunk);
+            newChunks.push(chunk);
         }
       }
     }
-    groupEventChunks(chunks);
+
+    groupEventChunks(newChunks);
+
+    chunks.set(newChunks);
+    bgChunks.set(newBgChunks);
+
+    console.log('chunks', chunks);
   });
 
   const iChunks = $derived(
@@ -104,11 +111,17 @@
     ? ' ' + $theme.today
     : ''}{highlight ? ' ' + $theme.highlight : ''}"
   role="cell"
-  onpointerleave={$_interaction.pointer?.leave}
-  onpointerdown={$_interaction.action?.select}
+  onpointerleave={(e) => {
+    //console.log($_interaction.pointer?.leave);
+    $_interaction.pointer?.leave?.(e);
+  }}
+  onpointerdown={(e) => {
+    //console.log($_interaction.action?.select);
+    $_interaction.action?.select?.(e);
+  }}
 >
   <div class={$theme.bgEvents}>
-    {#each bgChunks as chunk (chunk.event)}
+    {#each $bgChunks as chunk (chunk.event)}
       <Event {date} {chunk} />
     {/each}
   </div>
@@ -117,7 +130,7 @@
     {#if iChunks[1]}
       <Event {date} chunk={iChunks[1]} />
     {/if}
-    {#each chunks as chunk (chunk.event)}
+    {#each $chunks as chunk (chunk.event)}
       <Event {date} {chunk} />
     {/each}
     <!-- Drag, Resize & Select -->
