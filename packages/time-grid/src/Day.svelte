@@ -68,7 +68,6 @@ $effect(() => {
     chunks.set(newChunks);
     bgChunks.set(newBgChunks);
 
-    console.log('chunks', chunks);
   });
 
   const iChunks = $derived(
